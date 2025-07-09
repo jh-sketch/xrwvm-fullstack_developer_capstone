@@ -37,6 +37,8 @@ def login_user(request):
         login(request, user)
         data = {"userName": username, "status": "Authenticated"}
     return JsonResponse(data)
+def index(request):
+    return render(request, 'Home.html')  # This looks for templates/Home.html
 
 # Create a `logout_request` view to handle sign out request
 # def logout_request(request):
