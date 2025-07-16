@@ -14,7 +14,7 @@ import logging
 import json
 from django.views.decorators.csrf import csrf_exempt
 from .populate import initiate
-
+from .models import CarMake, CarModel
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -85,6 +85,20 @@ def registration(request):
         return JsonResponse({"userName": username, "status": "Authenticated"})
     else:
         return JsonResponse({"userName": username, "error": "Already Registered"})    
+
+def get_cars(request):
+    count = CarMake.objects.filter().count()
+    print(count)
+    if count == 0:
+        initiate()  # Only include this line if you have an `initiate()` method
+    car_models = CarModel.objects.select_related('car_make')
+    cars = []
+    for car_model in car_models:
+        cars.append({
+            "CarModel": car_model.name,
+            "CarMake": car_model.car_make.name
+        })
+    return JsonResponse({"CarModels": cars})
 # Create a `logout_request` view to handle sign out request
 # def logout_request(request):
 # ...

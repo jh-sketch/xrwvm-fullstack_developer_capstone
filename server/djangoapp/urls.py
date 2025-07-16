@@ -8,5 +8,6 @@ app_name = 'djangoapp'
 urlpatterns = [
     path('login', views.login_user, name='login'),
     path('logout', views.logout_user, name='logout'),
-    path('register', views.registration, name='registration'),  # ← Make sure this is here
+    path('register', views.registration, name='registration'),  
+    path(route='get_cars', view=views.get_cars, name ='getcars'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
