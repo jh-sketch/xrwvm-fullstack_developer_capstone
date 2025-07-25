@@ -94,9 +94,8 @@ def get_dealer_reviews(request, dealer_id):
         endpoint = f"/fetchReviews/dealer/{dealer_id}"
         reviews = get_request(endpoint)
         for review in reviews:
-            sentiment = analyze_review_sentiments(
-                review.get('review', '')
-            )
+            review_text = review.get('review', '')
+            sentiment = analyze_review_sentiments(review_text)
             review['sentiment'] = sentiment.get('sentiment', 'neutral')
         return JsonResponse({"status": 200, "reviews": reviews})
     return JsonResponse({"status": 400, "message": "Bad Request"})
