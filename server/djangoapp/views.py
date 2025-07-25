@@ -1,9 +1,8 @@
-from django.shortcuts import render, get_object_or_404, redirect
-from django.http import HttpResponseRedirect, JsonResponse
+from django.shortcuts import render
+from django.http import JsonResponse
 from django.contrib.auth import logout, login, authenticate
 from django.contrib.auth.models import User
 from django.views.decorators.csrf import csrf_exempt
-from django.contrib import messages
 import logging
 import json
 
@@ -11,12 +10,11 @@ from .populate import initiate
 from .models import CarMake, CarModel
 from .restapis import get_request, analyze_review_sentiments, post_review
 
-# Get an instance of a logger
 logger = logging.getLogger(__name__)
 
 
 def index(request):
-    return render(request, 'Home.html')  # Looks for templates/Home.html
+    return render(request, 'Home.html')
 
 
 @csrf_exempt
@@ -78,7 +76,10 @@ def get_cars(request):
     if count == 0:
         initiate()
     car_models = CarModel.objects.select_related('car_make')
-    cars = [{"CarModel": cm.name, "CarMake": cm.car_make.name} for cm in car_models]
+    cars = [
+        {"CarModel": cm.name, "CarMake": cm.car_make.name}
+        for cm in car_models
+    ]
     return JsonResponse({"CarModels": cars})
 
 
@@ -93,7 +94,9 @@ def get_dealer_reviews(request, dealer_id):
         endpoint = f"/fetchReviews/dealer/{dealer_id}"
         reviews = get_request(endpoint)
         for review in reviews:
-            sentiment = analyze_review_sentiments(review.get('review', ''))
+            sentiment = analyze_review_sentiments(
+                review.get('review', '')
+            )
             review['sentiment'] = sentiment.get('sentiment', 'neutral')
         return JsonResponse({"status": 200, "reviews": reviews})
     return JsonResponse({"status": 400, "message": "Bad Request"})
@@ -115,5 +118,8 @@ def add_review(request):
             return JsonResponse({"status": 200})
         except Exception as e:
             logger.error(f"Error posting review: {e}")
-            return JsonResponse({"status": 401, "message": "Error in posting review"})
+            return JsonResponse({
+                "status": 401,
+                "message": "Error in posting review"
+            })
     return JsonResponse({"status": 403, "message": "Unauthorized"})
