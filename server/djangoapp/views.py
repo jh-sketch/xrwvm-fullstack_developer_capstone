@@ -1,11 +1,9 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponseRedirect, JsonResponse
-from django.contrib.auth.models import User
-from django.shortcuts import get_object_or_404, redirect
 from django.contrib.auth import logout, login, authenticate
-from django.contrib import messages
-from datetime import datetime
+from django.contrib.auth.models import User
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib import messages
 import logging
 import json
 
@@ -21,7 +19,6 @@ def index(request):
     return render(request, 'Home.html')  # Looks for templates/Home.html
 
 
-# Login view to handle sign in request
 @csrf_exempt
 def login_user(request):
     try:
@@ -43,14 +40,12 @@ def login_user(request):
     return JsonResponse(response_data)
 
 
-# Logout view to terminate user session
 @csrf_exempt
 def logout_user(request):
     logout(request)
     return JsonResponse({"userName": ""})
 
 
-# Registration view
 @csrf_exempt
 def registration(request):
     try:
@@ -88,10 +83,7 @@ def get_cars(request):
 
 
 def get_dealerships(request, state="All"):
-    if state == "All":
-        endpoint = "/fetchDealers"
-    else:
-        endpoint = f"/fetchDealers/{state}"
+    endpoint = "/fetchDealers" if state == "All" else f"/fetchDealers/{state}"
     dealerships = get_request(endpoint)
     return JsonResponse({"status": 200, "dealers": dealerships})
 
@@ -101,11 +93,10 @@ def get_dealer_reviews(request, dealer_id):
         endpoint = f"/fetchReviews/dealer/{dealer_id}"
         reviews = get_request(endpoint)
         for review in reviews:
-            sentiment = analyze_review_sentiments(review['review'])
-            review['sentiment'] = sentiment.get('sentiment')
+            sentiment = analyze_review_sentiments(review.get('review', ''))
+            review['sentiment'] = sentiment.get('sentiment', 'neutral')
         return JsonResponse({"status": 200, "reviews": reviews})
-    else:
-        return JsonResponse({"status": 400, "message": "Bad Request"})
+    return JsonResponse({"status": 400, "message": "Bad Request"})
 
 
 def get_dealer_details(request, dealer_id):
@@ -113,8 +104,7 @@ def get_dealer_details(request, dealer_id):
         endpoint = f"/fetchDealer/{dealer_id}"
         dealership = get_request(endpoint)
         return JsonResponse({"status": 200, "dealer": dealership})
-    else:
-        return JsonResponse({"status": 400, "message": "Bad Request"})
+    return JsonResponse({"status": 400, "message": "Bad Request"})
 
 
 def add_review(request):
@@ -126,5 +116,4 @@ def add_review(request):
         except Exception as e:
             logger.error(f"Error posting review: {e}")
             return JsonResponse({"status": 401, "message": "Error in posting review"})
-    else:
-        return JsonResponse({"status": 403, "message": "Unauthorized"})
+    return JsonResponse({"status": 403, "message": "Unauthorized"})
